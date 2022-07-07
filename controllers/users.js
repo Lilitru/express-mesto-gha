@@ -30,7 +30,12 @@ module.exports.getUserById = (req, res) => {
       else
         res.send(user)
     })
-    .catch(err => res.status(ERROR_CODE_500).send({ message: `Произошла ошибка ${err.name} с текстом ${err.message}` }));
+    .catch(err => {
+      if(err.name === 'CastError')
+        res.status(ERROR_CODE_400).send({ message: 'Переданы некорректные данные' });
+      else
+        res.status(ERROR_CODE_500).send({ message: `Произошла ошибка ${err.name} с текстом ${err.message}` });
+    });
 };
 
 module.exports.getUsers = (req, res) => {

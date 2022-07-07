@@ -23,11 +23,11 @@ app.use((req, res, next) => {
 app.use('/users', userRouter);
 app.use('/cards', cardRouter);
 
-mongoose.connect('mongodb://localhost:27017/mestodb');
-
-app.get('*', (req, res) => {
-  res.status(404).send({message:'Not found'});
+app.use('*', (req, res) => {
+  res.status(404).send({ message:'Not found' });
 });
+
+mongoose.connect('mongodb://localhost:27017/mestodb');
 
 app.listen(PORT, () => {
   console.log('listening port 3000');

@@ -16,7 +16,12 @@ module.exports.createCard = (req, res) => {
 
   card.create({ name, link, owner })
     .then(card => res.send(card))
-    .catch(err => res.status(ERROR_CODE_500).send({ message: `Произошла ошибка ${err.name} с текстом ${err.message}` }));
+    .catch(err => {
+      if(err.name === 'ValidationError')
+        res.status(ERROR_CODE_400).send({ message: 'Переданы некорректные данные' });
+      else
+        res.status(ERROR_CODE_500).send({ message: `Произошла ошибка ${err.name} с текстом ${err.message}` });
+    });
 };
 
 module.exports.getCards = (req, res) => {
@@ -33,7 +38,12 @@ module.exports.deleteCard = (req, res) => {
       else
         res.send(card)
     })
-    .catch(err => res.status(ERROR_CODE_500).send({ message: `Произошла ошибка ${err.name} с текстом ${err.message}` }));
+    .catch(err => {
+      if(err.name === 'CastError')
+        res.status(ERROR_CODE_400).send({ message: 'Переданы некорректные данные' });
+      else
+        res.status(ERROR_CODE_500).send({ message: `Произошла ошибка ${err.name} с текстом ${err.message}` });
+    });
 };
 
 module.exports.likeCard = (req, res) => {
@@ -52,7 +62,12 @@ module.exports.likeCard = (req, res) => {
       else
         res.send(card)
     })
-    .catch(err => res.status(ERROR_CODE_500).send({ message: `Произошла ошибка ${err.name} с текстом ${err.message}` }));
+    .catch(err => {
+      if(err.name === 'CastError')
+        res.status(ERROR_CODE_400).send({ message: 'Переданы некорректные данные' });
+      else
+        res.status(ERROR_CODE_500).send({ message: `Произошла ошибка ${err.name} с текстом ${err.message}` });
+    });
 };
 
 module.exports.dislikeCard = (req, res) => {
@@ -71,5 +86,10 @@ module.exports.dislikeCard = (req, res) => {
     else
       res.send(card)
   })
-    .catch(err => res.status(ERROR_CODE_500).send({ message: `Произошла ошибка ${err.name} с текстом ${err.message}` }));
+  .catch(err => {
+    if(err.name === 'CastError')
+      res.status(ERROR_CODE_400).send({ message: 'Переданы некорректные данные' });
+    else
+      res.status(ERROR_CODE_500).send({ message: `Произошла ошибка ${err.name} с текстом ${err.message}` });
+  });
 };
