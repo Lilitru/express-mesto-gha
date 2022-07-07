@@ -13,13 +13,13 @@ module.exports.createUser = (req, res) => {
     return res.status(ERROR_CODE_400).send({ message: 'Переданы некорректные данные' });
 
   user.create({ name, about, avatar })
-  .then(user => {
-    if (!user)
-      res.status(ERROR_CODE_400).send({ message: 'Переданы некорректные данные' });
-    else
-      res.send(user)
-  })
-    .catch(err => res.status(ERROR_CODE_500).send({ message: `Произошла ошибка ${err.name} с текстом ${err.message}` }));
+  .then(user => res.send(user))
+    .catch(err => {
+      if(err.name === 'ValidationError')
+        res.status(ERROR_CODE_400).send({ message: 'Переданы некорректные данные' });
+      else
+        res.status(ERROR_CODE_500).send({ message: `Произошла ошибка ${err.name} с текстом ${err.message}` });
+    });
 };
 
 module.exports.getUserById = (req, res) => {
