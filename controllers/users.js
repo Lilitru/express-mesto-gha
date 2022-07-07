@@ -13,7 +13,12 @@ module.exports.createUser = (req, res) => {
     return res.status(ERROR_CODE_400).send({ message: 'Переданы некорректные данные' });
 
   user.create({ name, about, avatar })
-    .then(user => res.send(user))
+  .then(user => {
+    if (!user)
+      res.status(ERROR_CODE_400).send({ message: 'Переданы некорректные данные' });
+    else
+      res.send(user)
+  })
     .catch(err => res.status(ERROR_CODE_500).send({ message: `Произошла ошибка ${err.name} с текстом ${err.message}` }));
 };
 
