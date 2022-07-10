@@ -4,6 +4,7 @@ const user = require('../models/user');
 
 const {
   ERROR_CODE_404,
+  ERROR_CODE_409,
 } = require('../utils/constants');
 
 module.exports.createUser = (req, res, next) => {
@@ -15,7 +16,7 @@ module.exports.createUser = (req, res, next) => {
     .then((existingUser) => {
       if (existingUser) {
         const err = new Error('Пользователь с таким email уже существует');
-        err.statusCode = ERROR_CODE_404;
+        err.statusCode = ERROR_CODE_409;
         throw err;
       }
       bcrypt.hash(password, 10)
@@ -24,7 +25,7 @@ module.exports.createUser = (req, res, next) => {
         }))
         .then((createdUser) => user.findOne({ _id: createdUser._id }))
         .then((userWithoutPass) => {
-          res.status(201).send(userWithoutPass);
+          res.status(200).send(userWithoutPass);
         });
     })
     .catch(next);
