@@ -25,7 +25,7 @@ module.exports.createUser = (req, res, next) => {
         }))
         .then((createdUser) => user.findOne({ _id: createdUser._id }))
         .then((userWithoutPass) => {
-          res.status(200).send(userWithoutPass);
+          res.status(201).send(userWithoutPass);
         });
     })
     .catch(next);
@@ -112,7 +112,7 @@ module.exports.login = (req, res, next) => {
         httpOnly: true,
         sameSite: true,
       });
-      res.status(201).send({ message: 'Авторизация пройдена', token });
+      res.status(200).send({ message: 'Авторизация пройдена', token });
     })
     .catch(next);
 };
