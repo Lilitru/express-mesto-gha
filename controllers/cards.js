@@ -1,16 +1,20 @@
 const card = require('../models/card');
 
-const {
-  ERROR_CODE_403,
-  ERROR_CODE_404,
-} = require('../utils/constants');
+const BadRequestError = require('../errors/BadRequestError');
+const ForbiddenError = require('../errors/ForbiddenError');
+const NotFoundError = require('../errors/NotFoundError');
 
 module.exports.createCard = (req, res, next) => {
   const { name, link, owner = req.user._id } = req.body;
 
   card.create({ name, link, owner })
     .then((newCard) => res.status(201).send(newCard))
-    .catch(next);
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        next(new BadRequestError('Переданы некорректные данные.'));
+      }
+      next(err);
+    });
 };
 
 module.exports.getCards = (req, res, next) => {
@@ -23,19 +27,20 @@ module.exports.deleteCard = (req, res, next) => {
   card.findById(req.params.cardId)
     .then((existingCard) => {
       if (!existingCard) {
-        const err = new Error('Карточка не найдена');
-        err.statusCode = ERROR_CODE_404;
-        throw err;
+        throw new NotFoundError('Карточка не найдена');
       } else if (existingCard.owner.toString() === req.user._id) {
-        existingCard.remove()
+        return existingCard.remove()
           .then((removedCard) => res.send(removedCard));
       } else {
-        const err = new Error('Пользователь не может удалить карточку, созданную другим пользователем');
-        err.statusCode = ERROR_CODE_403;
-        throw err;
+        throw new ForbiddenError('Пользователь не может удалить карточку, созданную другим пользователем');
       }
     })
-    .catch(next);
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        next(new BadRequestError({ message: 'Переданы некорректные данные' }));
+      }
+      next(err);
+    });
 };
 
 module.exports.likeCard = (req, res, next) => {
@@ -46,14 +51,17 @@ module.exports.likeCard = (req, res, next) => {
   )
     .then((newCard) => {
       if (!newCard) {
-        const err = new Error('Карточка не найдена');
-        err.statusCode = ERROR_CODE_404;
-        throw err;
+        throw new NotFoundError('Карточка не найдена');
       } else {
         res.send(newCard);
       }
     })
-    .catch(next);
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        next(new BadRequestError({ message: 'Переданы некорректные данные' }));
+      }
+      next(err);
+    });
 };
 
 module.exports.dislikeCard = (req, res, next) => {
@@ -64,10 +72,13 @@ module.exports.dislikeCard = (req, res, next) => {
   )
     .then((newCard) => {
       if (!newCard) {
-        const err = new Error('Карточка не найдена');
-        err.statusCode = ERROR_CODE_404;
-        throw err;
+        throw new NotFoundError('Карточка не найдена');
       } else { res.send(newCard); }
     })
-    .catch(next);
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        next(new BadRequestError({ message: 'Переданы некорректные данные' }));
+      }
+      next(err);
+    });
 };

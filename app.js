@@ -10,12 +10,8 @@ const cardRouter = require('./routes/cards');
 const { login, createUser } = require('./controllers/users');
 const auth = require('./middlewares/auth');
 
-const {
-  ERROR_CODE_400,
-  ERROR_CODE_409,
-  ERROR_CODE_500,
-  validateUrl,
-} = require('./utils/constants');
+const NotFoundError = require('./errors/NotFoundError');
+const { ERROR_CODE_500, validateUrl } = require('./utils/constants');
 
 const PORT = 3000;
 
@@ -43,8 +39,8 @@ app.post('/signup', celebrate({
   }),
 }), createUser);
 
-app.use('*', (req, res) => {
-  res.status(404).send({ message: 'Not found' });
+app.use('*', auth, (req, res, next) => {
+  next(new NotFoundError('Not found'));
 });
 
 mongoose.connect('mongodb://localhost:27017/mestodb');
@@ -53,22 +49,16 @@ app.use(errors());
 
 app.use((err, req, res, next) => {
   // если у ошибки нет статуса, выставляем 500
-  const { statusCode = ERROR_CODE_500, message, name } = err;
+  const { statusCode = ERROR_CODE_500, message } = err;
 
-  if (name === 'ValidationError' || name === 'CastError') {
-    res.status(ERROR_CODE_400).send({ message: 'Переданы некорректные данные' });
-  } else if (statusCode === ERROR_CODE_409) {
-    res.status(ERROR_CODE_409).send({ message: 'Невозможно использовать указанную почту - пользователь с указанной почтой уже зарегистрирован' });
-  } else {
-    res
-      .status(statusCode)
-      .send({
-        // проверяем статус и выставляем сообщение в зависимости от него
-        message: statusCode === ERROR_CODE_500
-          ? 'На сервере произошла ошибка'
-          : message,
-      });
-  }
+  res
+    .status(statusCode)
+    .send({
+      // проверяем статус и выставляем сообщение в зависимости от него
+      message: statusCode === ERROR_CODE_500
+        ? 'На сервере произошла ошибка'
+        : message,
+    });
 
   next();
 });
