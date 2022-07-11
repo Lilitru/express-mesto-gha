@@ -2,9 +2,7 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 const { isEmail, isURL } = require('validator');
 
-const {
-  ERROR_CODE_401,
-} = require('../utils/constants');
+const UnauthorizedError = require('../errors/UnauthorizedError');
 
 const userSchema = new mongoose.Schema({
   name: {
@@ -44,19 +42,14 @@ userSchema.statics.findUserByCredentials = function (email, password) {
   return this.findOne({ email }).select('+password')
     .then((user) => {
       if (!user) {
-        const err = new Error('Неправильные почта или пароль');
-        err.statusCode = ERROR_CODE_401;
-        return Promise.reject(err);
+        return Promise.reject(new UnauthorizedError('Неправильные почта или пароль'));
       }
 
       return bcrypt.compare(password, user.password)
         .then((matched) => {
           if (!matched) {
-            const err = new Error('Неправильные почта или пароль');
-            err.statusCode = ERROR_CODE_401;
-            return Promise.reject(err);
+            return Promise.reject(new UnauthorizedError('Неправильные почта или пароль'));
           }
-
           return user; // теперь user доступен
         });
     });
