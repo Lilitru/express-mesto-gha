@@ -17,7 +17,7 @@ module.exports.createUser = (req, res, next) => {
       if (existingUser) {
         throw new ConflictingRequestError('Пользователь с таким email уже существует');
       }
-      bcrypt.hash(password, 10)
+      return bcrypt.hash(password, 10)
         .then((hash) => user.create({
           name, about, avatar, email, password: hash,
         }))
@@ -81,9 +81,9 @@ module.exports.updateUserInfo = (req, res, next) => {
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        next(new BadRequestError('Переданы некорректные данные'));
+        return next(new BadRequestError('Переданы некорректные данные'));
       }
-      next(err);
+      return next(err);
     });
 };
 
@@ -107,9 +107,9 @@ module.exports.updateUserAvatar = (req, res, next) => {
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        next(new BadRequestError('Переданы некорректные данные'));
+        return next(new BadRequestError('Переданы некорректные данные'));
       }
-      next(err);
+      return next(err);
     });
 };
 
